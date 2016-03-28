@@ -1,0 +1,49 @@
+#include "CnComm.h"
+#include <stdlib.h>
+#include <Windows.h>
+#include <iostream>
+#include <string.h>
+#include <stdio.h>
+
+using namespace std;
+
+int main()
+{
+	CnComm Com;
+	Com.Open(7, 9600);
+	int n = 0;
+	float Ele1[6] = { 0 };
+	FILE *file;
+
+	file = fopen("data.json", "w");
+	while (1){
+		char c[100] = { 0 };
+		Com.Read(c, 100);
+		for (int i = 0; i < 70; i++)
+			if (c[i] == ','){
+				char ch[3]{c[i + 1], c[i + 2], 0};
+				int m = atoi(ch);
+				if (i + m >= 100)break;
+				else{
+					float Ele[6] = { 0 };
+
+					sscanf(c + i + 3, "%f %f %f %f %f %f", &Ele[0], &Ele[1], &Ele[2], &Ele[3], &Ele[4], &Ele[5]);
+					for (int i = 0; i < 6; i++)
+						Ele1[i] += Ele[i];
+					if (n == 9){
+						fprintf(file, "[{\"name\":\"Humidity\",\"unit\":\"%%\",\"value\":%.2f},", Ele1[0] / 10);
+						fprintf(file, "{\"name\":\"Temperature\",\"unit\":\"oC\",\"value\":%.2f},", Ele1[1] / 10);
+						fprintf(file, "{\"name\":\"Temperature\",\"unit\":\"oF\",\"value\":%.2f},", Ele1[2] / 10);
+						fprintf(file, "{\"name\":\"Temperature\",\"unit\":\"K\",\"value\":%.2f},", Ele1[3] / 10);
+						fprintf(file, "{\"name\":\"Dew Point\",\"unit\":\"oC\",\"value\":%.2f},", Ele1[4] / 10);
+						fprintf(file, "{\"name\":\"Dew PointFast\",\"unit\":\"oC\",\"value\":%.2f}]", Ele1[5] / 10);
+						fclose(file);
+						return 0;
+					}
+					else
+						n++;
+				}
+				break;
+			}
+	}
+}
